@@ -13,15 +13,15 @@
 //==============================================================================
 /**
 */
-class WaveformVisualiserAudioProcessor  : public juce::AudioProcessor
+class XYPadAudioProcessor  : public juce::AudioProcessor
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
 {
 public:
     //==============================================================================
-    WaveformVisualiserAudioProcessor();
-    ~WaveformVisualiserAudioProcessor() override;
+    XYPadAudioProcessor();
+    ~XYPadAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -56,9 +56,15 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    juce::AudioVisualiserComponent waveViewer{ 2 };
+    using APVTS = juce::AudioProcessorValueTreeState;
+    static APVTS::ParameterLayout createParameterLayout();
+
+    APVTS apvts{ *this, nullptr, "Parameters", createParameterLayout() };
 
 private:
+    juce::dsp::Gain<float> gainProcessor;
+    juce::dsp::Panner<float> panProcessor;
+
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WaveformVisualiserAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (XYPadAudioProcessor)
 };
