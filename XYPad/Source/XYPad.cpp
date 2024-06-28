@@ -1,4 +1,4 @@
-#include "XyPad.h"
+#include "XYPad.h"
 
 XYPad::Thumb::Thumb()
 {
@@ -23,26 +23,23 @@ void XYPad::Thumb::mouseDrag(const juce::MouseEvent& event)
 		moveCallback(getPosition().toDouble());
 }
 
-/*
-	* XY Pad section
-	*/
 XYPad::XYPad()
 {
 	addAndMakeVisible(thumb);
 	thumb.moveCallback = [&](juce::Point<double> position)
+	{
+		const std::lock_guard<std::mutex> lock(vectorMutex);
+		const auto bounds = getLocalBounds().toDouble();
+		const auto w = static_cast<double>(thumbSize);
+		for (auto* slider : xSliders)
 		{
-			const std::lock_guard<std::mutex> lock(vectorMutex);
-			const auto bounds = getLocalBounds().toDouble();
-			const auto w = static_cast<double>(thumbSize);
-			for (auto* slider : xSliders)
-			{
-				slider->setValue(juce::jmap(position.getX(), 0.0, bounds.getWidth() - w, slider->getMinimum(), slider->getMaximum()));
-			}
-			for (auto* slider : ySliders)
-			{
-				slider->setValue(juce::jmap(position.getY(), bounds.getHeight() - w, 0.0, slider->getMinimum(), slider->getMaximum()));
-			}
-		};
+			slider->setValue(juce::jmap(position.getX(), 0.0, bounds.getWidth() - w, slider->getMinimum(), slider->getMaximum()));
+		}
+		for (auto* slider : ySliders)
+		{
+			slider->setValue(juce::jmap(position.getY(), bounds.getHeight() - w, 0.0, slider->getMinimum(), slider->getMaximum()));
+		}
+	};
 }
 
 void XYPad::resized()
